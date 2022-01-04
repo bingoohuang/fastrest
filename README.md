@@ -32,7 +32,7 @@ fast restful framework for golang.
    }
    ```
 5. Create Makefile, [example](Makefile)
-6. `make`
+6. Build `make`
 7. Create initial conf.toml and ctl: `myapp -init`
 8. Startup `./ctl start`, you can set env `export GOLOG_STDOUT=true` before startup to view the log in stdout for debugging.
 9. Performance testing using [berf](https://github.com/bingoohuang/berf): `berf :14142/status -d15s -v`
@@ -41,7 +41,7 @@ fast restful framework for golang.
 
 1. Install [easyjson tool](https://github.com/bingoohuang/easyjson)
 1. Tag the model, see the following example.
-2. `easyjson yourmodel.go`
+2. Generate easyjson codes: `easyjson yourmodel.go`
 
 ```go
 //easyjson:json
