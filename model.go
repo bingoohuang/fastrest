@@ -11,11 +11,11 @@ type Rsp struct {
 
 //easyjson:json
 type P1SignReq struct {
-	Source  string
-	BizType string
+	Source  string `json:"source"`
+	BizType string `json:"bizType"`
 }
 
 //easyjson:json
 type P1SignRsp struct {
-	Source string
+	Source string `json:"source"`
 }

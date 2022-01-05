@@ -139,7 +139,7 @@ func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest1(in *jlexer.Lexer, out *
 			continue
 		}
 		switch key {
-		case "Source":
+		case "source":
 			out.Source = string(in.String())
 		default:
 			in.SkipRecursive()
@@ -156,7 +156,7 @@ func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest1(out *jwriter.Writer, in
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"Source\":"
+		const prefix string = ",\"source\":"
 		out.RawString(prefix[1:])
 		out.String(string(in.Source))
 	}
@@ -205,9 +205,9 @@ func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest2(in *jlexer.Lexer, out *
 			continue
 		}
 		switch key {
-		case "Source":
+		case "source":
 			out.Source = string(in.String())
-		case "BizType":
+		case "bizType":
 			out.BizType = string(in.String())
 		default:
 			in.SkipRecursive()
@@ -224,12 +224,12 @@ func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest2(out *jwriter.Writer, in
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"Source\":"
+		const prefix string = ",\"source\":"
 		out.RawString(prefix[1:])
 		out.String(string(in.Source))
 	}
 	{
-		const prefix string = ",\"BizType\":"
+		const prefix string = ",\"bizType\":"
 		out.RawString(prefix)
 		out.String(string(in.BizType))
 	}
