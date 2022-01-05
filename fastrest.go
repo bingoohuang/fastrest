@@ -18,7 +18,13 @@ import (
 )
 
 type Context struct {
-	Returners []bytebufferpool.PoolReturner
+	Returners   []bytebufferpool.PoolReturner
+	ServiceName string
+
+	Req interface{}
+	Rsp interface{}
+
+	Ctx *fasthttp.RequestCtx
 }
 
 func (c *Context) Release() {
@@ -42,21 +48,31 @@ func (c *Context) AppendPoolReturner(r bytebufferpool.PoolReturner) {
 	}
 }
 
+func (c *Context) createRspData() (data []byte, err error) {
+	var pt bytebufferpool.PoolReturner
+	if v, ok := c.Rsp.(easyjson.Marshaler); ok {
+		data, pt, err = easyjson.MarshalPool(Pool, v)
+		c.AppendPoolReturner(pt)
+		return data, err
+	} else if c.Rsp != nil {
+		return json.Marshal(c.Rsp)
+	}
+	return nil, nil
+}
+
 type Service interface {
 	CreateReq() (interface{}, error)
-	Process(dtx *Context, serviceName string, r interface{}) (interface{}, error)
+	Process(dtx *Context) (interface{}, error)
 }
 
 type PostProcessor interface {
-	PostProcess(serviceName string, req, rsp interface{}) (interface{}, error)
+	PostProcess(dtx *Context) error
 }
 
 type DummyService struct{}
 
-func (d *DummyService) CreateReq() (interface{}, error)                           { return nil, nil }
-func (d DummyService) Process(*Context, string, interface{}) (interface{}, error) { return nil, nil }
-
-var _ Service = (*DummyService)(nil)
+func (d *DummyService) CreateReq() (interface{}, error)      { return nil, nil }
+func (d DummyService) Process(*Context) (interface{}, error) { return nil, nil }
 
 type Router struct {
 	routers       map[string]Service
@@ -81,67 +97,61 @@ func (r *Router) Serve(port string) error {
 }
 
 func (r *Router) handle(ctx *fasthttp.RequestCtx) {
-	dtx := &Context{}
-	err := r.handleService(dtx, ctx)
-	dtx.Release()
+	dtx := &Context{Ctx: ctx}
+	defer dtx.Release()
 
-	if err != nil {
+	if err := r.handleService(dtx); err != nil {
 		log.Printf("E! failed to handleService, error: %v", err)
 		ctx.SetStatusCode(500)
 	}
 }
 
-func (r *Router) handleService(dtx *Context, ctx *fasthttp.RequestCtx) error {
-	serviceName, service := r.findService(ctx)
-	if service == nil {
-		ctx.NotFound()
+func (r *Router) handleService(dtx *Context) error {
+	serviceName, s := r.findService(dtx)
+	if s == nil {
+		dtx.Ctx.NotFound()
 		return nil
 	}
 
-	req, err := service.CreateReq()
+	dtx.ServiceName = serviceName
+	req, err := s.CreateReq()
 	if err != nil {
 		return err
 	}
+	dtx.Req = req
 
 	if v, ok := req.(easyjson.Unmarshaler); ok {
-		if pt, err := easyjson.UnmarshalPool(Pool, ctx.Request.Body(), v); pt != nil {
+		if pt, err := easyjson.UnmarshalPool(Pool, dtx.Ctx.Request.Body(), v); pt != nil {
 			dtx.AppendPoolReturner(pt)
 		} else if err != nil {
 			return err
 		}
 	}
 
-	rsp, err := service.Process(dtx, serviceName, req)
+	dtx.Rsp, err = s.Process(dtx)
 	if err != nil {
 		return err
 	}
-	if pp, ok := service.(PostProcessor); ok {
-		rsp, err = pp.PostProcess(serviceName, req, rsp)
-		if err != nil {
+
+	if p, ok := s.(PostProcessor); ok {
+		if err := p.PostProcess(dtx); err != nil {
 			return err
 		}
 	}
 
-	var data []byte
-	var pt bytebufferpool.PoolReturner
-	if v, ok := rsp.(easyjson.Marshaler); ok {
-		data, pt, err = easyjson.MarshalPool(Pool, v)
-	} else if rsp != nil {
-		data, err = json.Marshal(rsp)
-	}
-	dtx.AppendPoolReturner(pt)
+	data, err := dtx.createRspData()
 	if err != nil {
 		return err
 	}
 
-	ctx.SetContentType("application/json; charset=utf-8")
-	_, err = ctx.Write(data)
+	dtx.Ctx.SetContentType("application/json; charset=utf-8")
+	_, err = dtx.Ctx.Write(data)
 	return err
 }
 
-func (r *Router) findService(ctx *fasthttp.RequestCtx) (string, Service) {
-	path := string(ctx.Path())
-	method := string(ctx.Method())
+func (r *Router) findService(dtx *Context) (string, Service) {
+	path := string(dtx.Ctx.Path())
+	method := string(dtx.Ctx.Method())
 	key := method + " " + path
 	if service, ok := r.routers[key]; ok {
 		return r.routerService[key], service
