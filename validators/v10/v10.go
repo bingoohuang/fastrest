@@ -9,6 +9,10 @@ var validate = validator.New()
 
 func init() {
 	fastrest.RegisterPreProcessor(fastrest.PreProcessorFn(func(dtx *fastrest.Context) error {
-		return validate.Struct(dtx.Req)
+		if dtx.Req != nil {
+			return validate.Struct(dtx.Req)
+		}
+
+		return nil
 	}))
 }

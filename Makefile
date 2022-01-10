@@ -54,6 +54,7 @@ fmt:
 install: init
 	${goinstall1}
 	upx ${gobin}/${app}
+
 linux: init
 	GOOS=linux GOARCH=amd64 ${goinstall1}
 	upx ${gobin}/linux_amd64/${app}
