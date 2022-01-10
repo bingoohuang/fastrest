@@ -69,6 +69,10 @@ type PostProcessor interface {
 	PostProcess(dtx *Context) error
 }
 
+type PreProcessor interface {
+	PreProcess(dtx *Context) error
+}
+
 type DummyService struct{}
 
 func (d *DummyService) CreateReq() (interface{}, error)      { return nil, nil }
@@ -120,10 +124,20 @@ func (r *Router) handleService(dtx *Context) error {
 	}
 	dtx.Req = req
 
+	if p, ok := s.(PreProcessor); ok {
+		if err := p.PreProcess(dtx); err != nil {
+			return err
+		}
+	}
+
 	if v, ok := req.(easyjson.Unmarshaler); ok {
 		if pt, err := easyjson.UnmarshalPool(Pool, dtx.Ctx.Request.Body(), v); pt != nil {
 			dtx.AppendPoolReturner(pt)
 		} else if err != nil {
+			return err
+		}
+	} else if strings.Contains(string(dtx.Ctx.Request.Header.Peek("Content-Type")), "json") {
+		if err := json.Unmarshal(dtx.Ctx.Request.Body(), v); err != nil {
 			return err
 		}
 	}
