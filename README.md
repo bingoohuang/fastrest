@@ -2,6 +2,8 @@
 
 fast restful framework for golang.
 
+![img.png](_doc/architect.png)
+
 2. Create your app directory, like `mkdir myapp; cd myapp; go mod init myapp;`
 3. Create initial config.toml in a folder `initassets`, [example](cmd/fastrest/initassets/conf.yml)
    ```yaml
@@ -77,4 +79,20 @@ BizType string
 type Service1Rsp struct {
 Source string
 }
+```
+
+## Global PreProcessor and PostProcessor
+
+```go
+// 注册路由
+router := fastrest.New(map[string]fastrest.Service{
+	"GET /status":  &fastrest.Status{},
+	"POST /p1sign": &fastrest.P1Sign{},
+}, fastrest.WithPreProcessor(fastrest.PreProcessorFn(func(dtx *fastrest.Context) error {
+	// 全局前置处理器
+	return nil
+})), fastrest.WithPostProcessor(fastrest.PostProcessorFn(func(dtx *fastrest.Context) error {
+	// 全局后置处理器
+	return nil
+})))
 ```

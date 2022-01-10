@@ -14,7 +14,13 @@ func main() {
 	router := fastrest.New(map[string]fastrest.Service{
 		"GET /status":  &fastrest.Status{},
 		"POST /p1sign": &fastrest.P1Sign{},
-	})
+	}, fastrest.WithPreProcessor(fastrest.PreProcessorFn(func(dtx *fastrest.Context) error {
+		// 全局前置处理器
+		return nil
+	})), fastrest.WithPostProcessor(fastrest.PostProcessorFn(func(dtx *fastrest.Context) error {
+		// 全局后置处理器
+		return nil
+	})))
 
 	args := fastrest.ParseArgs(&InitAssets)
 	args.Run(router)

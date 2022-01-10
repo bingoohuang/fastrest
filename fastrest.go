@@ -65,12 +65,23 @@ type Service interface {
 	Process(dtx *Context) (interface{}, error)
 }
 
+type PreProcessor interface {
+	PreProcess(dtx *Context) error
+}
+type PreProcessorFn func(dtx *Context) error
+
+func (f PreProcessorFn) PreProcess(dtx *Context) error {
+	return f(dtx)
+}
+
 type PostProcessor interface {
 	PostProcess(dtx *Context) error
 }
 
-type PreProcessor interface {
-	PreProcess(dtx *Context) error
+type PostProcessorFn func(dtx *Context) error
+
+func (f PostProcessorFn) PostProcess(dtx *Context) error {
+	return f(dtx)
 }
 
 type DummyService struct{}
@@ -81,10 +92,35 @@ func (d DummyService) Process(*Context) (interface{}, error) { return nil, nil }
 type Router struct {
 	routers       map[string]Service
 	routerService map[string]string
+	config        *RouterConfig
 }
 
-func New(m map[string]Service) *Router {
+type RouterConfig struct {
+	PreProcessors  []PreProcessor
+	PostProcessors []PostProcessor
+}
+
+type RouterConfigFn func(*RouterConfig)
+
+func WithPreProcessor(v PreProcessor) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.PreProcessors = append(r.PreProcessors, v)
+	}
+}
+
+func WithPostProcessor(v PostProcessor) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.PostProcessors = append([]PostProcessor{v}, r.PostProcessors...)
+	}
+}
+
+func New(m map[string]Service, fns ...RouterConfigFn) *Router {
+	config := &RouterConfig{}
+	for _, fn := range fns {
+		fn(config)
+	}
 	return &Router{
+		config:        config,
 		routers:       m,
 		routerService: makeRouterServices(m),
 	}
@@ -124,6 +160,12 @@ func (r *Router) handleService(dtx *Context) error {
 	}
 	dtx.Req = req
 
+	for _, p := range r.config.PreProcessors {
+		if err := p.PreProcess(dtx); err != nil {
+			return err
+		}
+	}
+
 	if p, ok := s.(PreProcessor); ok {
 		if err := p.PreProcess(dtx); err != nil {
 			return err
@@ -148,6 +190,12 @@ func (r *Router) handleService(dtx *Context) error {
 	}
 
 	if p, ok := s.(PostProcessor); ok {
+		if err := p.PostProcess(dtx); err != nil {
+			return err
+		}
+	}
+
+	for _, p := range r.config.PostProcessors {
 		if err := p.PostProcess(dtx); err != nil {
 			return err
 		}
