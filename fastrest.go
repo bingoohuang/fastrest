@@ -84,6 +84,16 @@ func (f PostProcessorFn) PostProcess(dtx *Context) error {
 	return f(dtx)
 }
 
+type ErrorProcessor interface {
+	ProcessError(dtx *Context, err error) error
+}
+
+type ErrorProcessorFn func(dtx *Context, err error) error
+
+func (f ErrorProcessorFn) ProcessError(dtx *Context, err error) error {
+	return f(dtx, err)
+}
+
 type DummyService struct{}
 
 func (d *DummyService) CreateReq() (interface{}, error)      { return nil, nil }
@@ -92,12 +102,32 @@ func (d DummyService) Process(*Context) (interface{}, error) { return nil, nil }
 type Router struct {
 	routers       map[string]Service
 	routerService map[string]string
-	config        *RouterConfig
+
+	Config *RouterConfig
 }
 
 type RouterConfig struct {
-	PreProcessors  []PreProcessor
-	PostProcessors []PostProcessor
+	PreProcessors   []PreProcessor
+	PostProcessors  []PostProcessor
+	ErrorProcessors []ErrorProcessor
+}
+
+var (
+	DefaultPreProcessors   []PreProcessor
+	DefaultPostProcessors  []PostProcessor
+	DefaultErrorProcessors []ErrorProcessor
+)
+
+func RegisterPreProcessor(processors ...PreProcessor) {
+	DefaultPreProcessors = append(DefaultPreProcessors, processors...)
+}
+
+func RegisterPostProcessor(processors ...PostProcessor) {
+	DefaultPostProcessors = append(DefaultPostProcessors, processors...)
+}
+
+func RegisterErrorProcessors(processors ...ErrorProcessor) {
+	DefaultErrorProcessors = append(DefaultErrorProcessors, processors...)
 }
 
 type RouterConfigFn func(*RouterConfig)
@@ -110,17 +140,27 @@ func WithPreProcessor(v PreProcessor) RouterConfigFn {
 
 func WithPostProcessor(v PostProcessor) RouterConfigFn {
 	return func(r *RouterConfig) {
-		r.PostProcessors = append([]PostProcessor{v}, r.PostProcessors...)
+		r.PostProcessors = append(r.PostProcessors, v)
+	}
+}
+
+func WithErrorProcessor(v ErrorProcessor) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.ErrorProcessors = append(r.ErrorProcessors, v)
 	}
 }
 
 func New(m map[string]Service, fns ...RouterConfigFn) *Router {
-	config := &RouterConfig{}
+	config := &RouterConfig{
+		PreProcessors:   append([]PreProcessor{}, DefaultPreProcessors...),
+		PostProcessors:  append([]PostProcessor{}, DefaultPostProcessors...),
+		ErrorProcessors: append([]ErrorProcessor{}, DefaultErrorProcessors...),
+	}
 	for _, fn := range fns {
 		fn(config)
 	}
 	return &Router{
-		config:        config,
+		Config:        config,
 		routers:       m,
 		routerService: makeRouterServices(m),
 	}
@@ -140,7 +180,18 @@ func (r *Router) handle(ctx *fasthttp.RequestCtx) {
 	dtx := &Context{Ctx: ctx}
 	defer dtx.Release()
 
-	if err := r.handleService(dtx); err != nil {
+	err := r.handleService(dtx)
+	if err == nil {
+		return
+	}
+
+	for _, p := range r.Config.ErrorProcessors {
+		if err = p.ProcessError(dtx, err); err == nil {
+			break
+		}
+	}
+
+	if err != nil {
 		log.Printf("E! failed to handleService, error: %v", err)
 		ctx.SetStatusCode(500)
 	}
@@ -160,7 +211,7 @@ func (r *Router) handleService(dtx *Context) error {
 	}
 	dtx.Req = req
 
-	for _, p := range r.config.PreProcessors {
+	for _, p := range r.Config.PreProcessors {
 		if err := p.PreProcess(dtx); err != nil {
 			return err
 		}
@@ -195,8 +246,8 @@ func (r *Router) handleService(dtx *Context) error {
 		}
 	}
 
-	for _, p := range r.config.PostProcessors {
-		if err := p.PostProcess(dtx); err != nil {
+	for i := len(r.Config.PostProcessors) - 1; i >= 0; i-- {
+		if err := r.Config.PostProcessors[i].PostProcess(dtx); err != nil {
 			return err
 		}
 	}

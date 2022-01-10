@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"github.com/bingoohuang/fastrest"
+	_ "github.com/bingoohuang/fastrest/validators/v10" // 引入请求结构体自动校验
 )
 
 // InitAssets is the initial assets.

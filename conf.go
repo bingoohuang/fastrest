@@ -6,7 +6,7 @@ import (
 )
 
 type Arg struct {
-	Config  string `flag:"c" usage:"yaml config filepath"`
+	Config  string `flag:"c" usage:"yaml Config filepath"`
 	Init    bool   `usage:"init example conf.yml/ctl and then exit"`
 	Version bool   `usage:"print version then exit"`
 
