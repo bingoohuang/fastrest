@@ -77,3 +77,36 @@ Latency Histogram:
 ```
 
 ![img.png](status-berf.png)
+
+```sh
+root@xb-PC:~/bingoohuang# ./berf :14142/status  -v -c26
+Berf benchmarking http://127.0.0.1:14142/status using 26 goroutine(s), 96 GoMaxProcs.
+@Real-time charts is on http://127.0.0.1:28888
+
+Summary:
+  Elapsed                   33.659s
+  Count/RPS      5087497 151146.901
+    200          5087497 151146.901
+  ReadWrite    235.789 198.306 Mbps
+  Connections                    26
+
+Statistics     Min       Mean     StdDev      Max
+  Latency     32µs       161µs     156µs    6.504ms
+  RPS       148722.46  151089.74  1217.02  153466.47
+
+Latency Percentile:
+  P50     P75    P90    P95    P99    P99.9   P99.99
+  138µs  179µs  233µs  288µs  593µs  2.309ms  3.563ms
+
+Latency Histogram:
+  158µs    5015872  98.59%  ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  274µs      63903   1.26%  ■
+  894µs       6342   0.12%
+  2.192ms      953   0.02%
+  2.999ms      336   0.01%
+  3.736ms       59   0.00%
+  4.724ms       29   0.00%
+  5.259ms        3   0.00%
+```
+
+![img.png](status-berf2.png)
