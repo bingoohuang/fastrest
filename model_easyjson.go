@@ -78,7 +78,7 @@ func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest(out *jwriter.Writer, in 
 		}
 		out.String(string(in.Message))
 	}
-	{
+	if in.Data != nil {
 		const prefix string = ",\"data\":"
 		if first {
 			first = false
