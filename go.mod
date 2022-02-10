@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/bingoohuang/easyjson v0.0.0-20211118132814-5606aa48c508
-	github.com/bingoohuang/gg v0.0.0-20211230093821-4f54b2ca3bb6
+	github.com/bingoohuang/gg v0.0.0-20220209061112-9cea4c89abc5
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/valyala/fasthttp v1.31.0
 )

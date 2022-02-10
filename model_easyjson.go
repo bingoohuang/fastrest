@@ -4,6 +4,7 @@ package fastrest
 
 import (
 	json "encoding/json"
+
 	easyjson "github.com/bingoohuang/easyjson"
 	jlexer "github.com/bingoohuang/easyjson/jlexer"
 	jwriter "github.com/bingoohuang/easyjson/jwriter"
@@ -58,6 +59,7 @@ func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest(in *jlexer.Lexer, out *R
 		in.Consumed()
 	}
 }
+
 func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest(out *jwriter.Writer, in Rsp) {
 	out.RawByte('{')
 	first := true
@@ -120,6 +122,7 @@ func (v *Rsp) UnmarshalJSON(data []byte) error {
 func (v *Rsp) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonC80ae7adDecodeGithubComBingoohuangFastrest(l, v)
 }
+
 func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest1(in *jlexer.Lexer, out *P1SignRsp) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -151,6 +154,7 @@ func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest1(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
+
 func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest1(out *jwriter.Writer, in P1SignRsp) {
 	out.RawByte('{')
 	first := true
@@ -186,6 +190,7 @@ func (v *P1SignRsp) UnmarshalJSON(data []byte) error {
 func (v *P1SignRsp) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonC80ae7adDecodeGithubComBingoohuangFastrest1(l, v)
 }
+
 func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest2(in *jlexer.Lexer, out *P1SignReq) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -219,6 +224,7 @@ func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest2(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
+
 func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest2(out *jwriter.Writer, in P1SignReq) {
 	out.RawByte('{')
 	first := true

@@ -1,8 +1,9 @@
 package fastrest
 
 import (
-	"github.com/bingoohuang/gg/pkg/v"
 	"log"
+
+	"github.com/bingoohuang/gg/pkg/v"
 )
 
 type Arg struct {
