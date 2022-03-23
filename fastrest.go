@@ -3,12 +3,15 @@ package fastrest
 import (
 	"embed"
 	"encoding/json"
-	"github.com/bingoohuang/gg/pkg/ss"
 	"log"
+	"net"
 	"reflect"
 	"runtime"
 	"strings"
 	"unsafe"
+
+	"github.com/bingoohuang/gg/pkg/ss"
+	"github.com/valyala/fasthttp/reuseport"
 
 	"github.com/bingoohuang/easyjson"
 	"github.com/bingoohuang/easyjson/bytebufferpool"
@@ -16,7 +19,6 @@ import (
 	"github.com/bingoohuang/gg/pkg/flagparse"
 	"github.com/bingoohuang/gg/pkg/sigx"
 	"github.com/valyala/fasthttp"
-	"github.com/valyala/fasthttp/reuseport"
 )
 
 type Context struct {
@@ -168,9 +170,15 @@ func New(m map[string]Service, fns ...RouterConfigFn) *Router {
 	}
 }
 
-func (r *Router) Serve(port string) error {
+func (r *Router) Serve(port string, reusePort bool) error {
 	log.Printf("Start to ListenAndServe %s", port)
-	ln, err := reuseport.Listen("tcp4", port)
+
+	listenFn := net.Listen
+	if reusePort {
+		listenFn = reuseport.Listen
+	}
+
+	ln, err := listenFn("tcp4", port)
 	if err != nil {
 		return err
 	}
