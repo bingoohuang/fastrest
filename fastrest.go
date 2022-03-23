@@ -3,6 +3,7 @@ package fastrest
 import (
 	"embed"
 	"encoding/json"
+	"github.com/bingoohuang/gg/pkg/ss"
 	"log"
 	"reflect"
 	"runtime"
@@ -230,8 +231,8 @@ func (r *Router) handleService(dtx *Context) error {
 		} else if err != nil {
 			return err
 		}
-	} else if strings.Contains(string(dtx.Ctx.Request.Header.Peek("Content-Type")), "json") {
-		if err := json.Unmarshal(dtx.Ctx.Request.Body(), v); err != nil {
+	} else if req != nil && ss.Contains(string(dtx.Ctx.Request.Header.Peek("Content-Type")), "json") {
+		if err := json.Unmarshal(dtx.Ctx.Request.Body(), req); err != nil {
 			return err
 		}
 	}

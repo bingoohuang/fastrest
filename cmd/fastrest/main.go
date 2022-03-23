@@ -14,6 +14,7 @@ var InitAssets embed.FS
 func main() {
 	// 注册路由
 	router := fastrest.New(map[string]fastrest.Service{
+		"GET /":        &fastrest.Version{},
 		"GET /status":  &fastrest.Status{},
 		"POST /p1sign": &fastrest.P1Sign{},
 	}, fastrest.WithPreProcessor(fastrest.PreProcessorFn(func(dtx *fastrest.Context) error {
