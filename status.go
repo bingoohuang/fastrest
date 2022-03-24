@@ -18,7 +18,7 @@ type Version struct{ DummyService }
 var logEnv = os.Getenv("LOG")
 
 func (p *Version) Process(ctx *Context) (interface{}, error) {
-	log.Printf("%s version request received from %s", logEnv, ctx.Ctx.RemoteAddr())
+	log.Printf("%s E! version request received from %s", logEnv, ctx.Ctx.RemoteAddr())
 
 	return &Rsp{Status: 200, Message: "成功", Data: map[string]interface{}{
 		"gitCommit":  v.GitCommit,

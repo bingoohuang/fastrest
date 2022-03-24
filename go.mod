@@ -7,7 +7,7 @@ go 1.18
 require (
 	github.com/bingoohuang/easyjson v0.0.0-20211118132814-5606aa48c508
 	github.com/bingoohuang/gg v0.0.0-20220324042648-3df984c35939
-	github.com/bingoohuang/golog v0.0.0-20220324070843-ecda5dcae427
+	github.com/bingoohuang/golog v0.0.0-20220324073451-a9594aaa3a7a
 	github.com/go-playground/validator/v10 v10.10.1
 	github.com/valyala/fasthttp v1.34.0
 )
