@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"github.com/bingoohuang/golog"
 
 	"github.com/bingoohuang/fastrest"
 	_ "github.com/bingoohuang/fastrest/validators/v10" // 引入请求结构体自动校验
@@ -12,6 +13,8 @@ import (
 var InitAssets embed.FS
 
 func main() {
+	golog.Setup()
+
 	// 注册路由
 	router := fastrest.New(map[string]fastrest.Service{
 		"GET /":        &fastrest.Version{},

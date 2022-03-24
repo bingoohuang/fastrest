@@ -1,9 +1,8 @@
 package fastrest
 
 import (
-	"log"
-
 	"github.com/bingoohuang/gg/pkg/v"
+	"log"
 )
 
 type Status struct{ DummyService }
