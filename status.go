@@ -15,8 +15,6 @@ func (p *Status) Process(*Context) (interface{}, error) {
 
 type Version struct{ DummyService }
 
-var logEnv = os.Getenv("LOG")
-
 func (p *Version) Process(ctx *Context) (interface{}, error) {
 	//log.Printf("%s E! version request received from %s", logEnv, ctx.Ctx.RemoteAddr())
 	switch LogTypeEnv {
