@@ -204,27 +204,27 @@ func (r *Router) Serve(port string, reusePort bool) error {
 	return fasthttp.Serve(ln, r.handle)
 }
 
-func (r *Router) recoverDeal(dtx *Context, err interface{}) {
-	log.Printf("E! recover: %+v", err)
-
-	if r.Config.PanicProcessor == nil {
-		dtx.Ctx.SetStatusCode(http.StatusInternalServerError)
-		dtx.Ctx.SetBodyString(fmt.Sprintf("%v", err))
+func (r *Router) recover(dtx *Context) {
+	recovered := recover()
+	if recovered == nil {
 		return
 	}
 
-	r.Config.PanicProcessor.PanicProcess(dtx, err)
+	log.Printf("E! recovered: %+v", recovered)
+
+	if p := r.Config.PanicProcessor; p != nil {
+		p.PanicProcess(dtx, recovered)
+		return
+	}
+
+	dtx.Ctx.SetStatusCode(http.StatusInternalServerError)
+	dtx.Ctx.SetBodyString(fmt.Sprintf("%+v", recovered))
 }
 
 func (r *Router) handle(ctx *fasthttp.RequestCtx) {
 	dtx := &Context{Ctx: ctx}
 	defer dtx.Release()
-
-	defer func() {
-		if err := recover(); err != nil {
-			r.recoverDeal(dtx, err)
-		}
-	}()
+	defer r.recover(dtx)
 
 	err := r.handleService(dtx)
 	if err == nil {
