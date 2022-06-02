@@ -3,8 +3,10 @@ package fastrest
 import (
 	"embed"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"reflect"
 	"runtime"
 	"strings"
@@ -69,6 +71,15 @@ type Service interface {
 	Process(dtx *Context) (interface{}, error)
 }
 
+type PanicProcessor interface {
+	PanicProcess(dtx *Context, recovered interface{})
+}
+type PanicProcessorFn func(dtx *Context, recovered interface{})
+
+func (f PanicProcessorFn) PanicProcess(dtx *Context, recovered interface{}) {
+	f(dtx, recovered)
+}
+
 type PreProcessor interface {
 	PreProcess(dtx *Context) error
 }
@@ -114,6 +125,7 @@ type RouterConfig struct {
 	PreProcessors   []PreProcessor
 	PostProcessors  []PostProcessor
 	ErrorProcessors []ErrorProcessor
+	PanicProcessor  PanicProcessor
 }
 
 var (
@@ -135,6 +147,12 @@ func RegisterErrorProcessors(processors ...ErrorProcessor) {
 }
 
 type RouterConfigFn func(*RouterConfig)
+
+func WithPanicProcessor(v PanicProcessor) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.PanicProcessor = v
+	}
+}
 
 func WithPreProcessor(v PreProcessor) RouterConfigFn {
 	return func(r *RouterConfig) {
@@ -186,9 +204,27 @@ func (r *Router) Serve(port string, reusePort bool) error {
 	return fasthttp.Serve(ln, r.handle)
 }
 
+func (r *Router) recoverDeal(dtx *Context, err interface{}) {
+	log.Printf("E! recover: %+v", err)
+
+	if r.Config.PanicProcessor == nil {
+		dtx.Ctx.SetStatusCode(http.StatusInternalServerError)
+		dtx.Ctx.SetBodyString(fmt.Sprintf("%v", err))
+		return
+	}
+
+	r.Config.PanicProcessor.PanicProcess(dtx, err)
+}
+
 func (r *Router) handle(ctx *fasthttp.RequestCtx) {
 	dtx := &Context{Ctx: ctx}
 	defer dtx.Release()
+
+	defer func() {
+		if err := recover(); err != nil {
+			r.recoverDeal(dtx, err)
+		}
+	}()
 
 	err := r.handleService(dtx)
 	if err == nil {

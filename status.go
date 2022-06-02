@@ -1,10 +1,11 @@
 package fastrest
 
 import (
-	"github.com/bingoohuang/gg/pkg/v"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/bingoohuang/gg/pkg/v"
 )
 
 type Status struct{ DummyService }
@@ -16,7 +17,7 @@ func (p *Status) Process(*Context) (interface{}, error) {
 type Version struct{ DummyService }
 
 func (p *Version) Process(ctx *Context) (interface{}, error) {
-	//log.Printf("%s E! version request received from %s", logEnv, ctx.Ctx.RemoteAddr())
+	// log.Printf("%s E! version request received from %s", logEnv, ctx.Ctx.RemoteAddr())
 	switch LogTypeEnv {
 	case LogOn:
 		log.Printf("E! version request received from %s", ctx.Ctx.RemoteAddr())

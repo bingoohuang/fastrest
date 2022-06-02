@@ -13,3 +13,9 @@ func (p *P1Sign) Process(dtx *Context) (interface{}, error) {
 func (p *P1Sign) process(dtx *Context, req *P1SignReq) (interface{}, error) {
 	return &P1SignRsp{Source: req.Source}, nil
 }
+
+type PanicService struct{ DummyService }
+
+func (p *PanicService) Process(dtx *Context) (interface{}, error) {
+	panic("simulate panic")
+}
