@@ -101,3 +101,46 @@ type P1SignRsp struct {
 }
 ```
 ---
+
+## 性能测试
+
+1. 空接口 `/status` TPS 30 万.
+
+|   # | Hostname             |   Uptime | Uptime Human | Procs | OS    | Platform | Host ID                              | Platform Version | Kernel Version               | Kernel Arch | Os Release                       | Mem Available             | Num CPU | Cpu Mhz | Cpu Model                                |
+|----:|----------------------|---------:|--------------|------:|-------|----------|--------------------------------------|------------------|------------------------------|-------------|----------------------------------|---------------------------|--------:|--------:|------------------------------------------|
+|   1 | fs04-192-168-126-184 | 14173428 | 5 months     |   373 | linux | centos   | ea4bc56f-c6da-4914-afc6-4d9e54267d41 | 8                | 4.18.0-240.22.1.el8_3.x86_64 | x86_64      | NAME="CentOS Stream" VERSION="8" | 57.25GiB/62.65GiB, 00.91% |      16 |    2300 | Intel(R) Xeon(R) Gold 5218 CPU @ 2.30GHz |
+
+```sh
+[footstone@fs04-192-168-126-184 ~]$ berf :14142/status -c500
+Berf benchmarking http://127.0.0.1:14142/status using 500 goroutine(s), 16 GoMaxProcs.
+
+Summary:
+  Elapsed                 43.346s
+  Count/RPS   13280606 306379.932
+    200       13280606 306379.932
+  ReadWrite  426.481 401.970 Mbps
+
+Statistics     Min       Mean     StdDev     Max
+  Latency     27µs      1.612ms   1.773ms  56.755ms
+  RPS       285977.74  306261.61  8250.69  326172.9
+
+Latency Percentile:
+  P50        P75      P90     P95      P99     P99.9     P99.99
+  1.324ms  2.059ms  2.749ms  3.85ms  9.626ms  18.188ms  29.256ms
+[footstone@fs04-192-168-126-184 ~]$ berf :14142/status -c500 -d1m
+Berf benchmarking http://127.0.0.1:14142/status for 1m0s using 500 goroutine(s), 16 GoMaxProcs.
+
+Summary:
+  Elapsed                    1m0s
+  Count/RPS   18266731 304441.873
+    200       18266731 304441.873
+  ReadWrite  423.783 399.428 Mbps
+
+Statistics     Min       Mean     StdDev      Max
+  Latency     27µs      1.621ms   1.766ms  69.199ms
+  RPS       278032.17  304437.17  9856.28  323089.77
+
+Latency Percentile:
+  P50        P75      P90      P95      P99     P99.9     P99.99
+  1.376ms  2.065ms  2.713ms  3.702ms  9.401ms  19.398ms  33.875ms
+```
