@@ -2,11 +2,23 @@ package fastrest
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bingoohuang/gg/pkg/v"
 )
+
+type Echo struct{ DummyService }
+
+func (p *Echo) Process(c *Context) (interface{}, error) {
+	return &Rsp{Status: 200, Message: "成功", Data: map[string]interface{}{
+		"RemoteAddr": c.Ctx.RemoteAddr().String(),
+		"RequestURI": string(c.Ctx.RequestURI()),
+		"TimeStamp":  time.Now().Format(http.TimeFormat),
+	}}, nil
+}
 
 type Status struct{ DummyService }
 

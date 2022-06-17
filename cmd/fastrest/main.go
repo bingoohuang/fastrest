@@ -22,6 +22,7 @@ func main() {
 	router := fastrest.New(map[string]fastrest.Service{
 		"GET /":        &fastrest.Version{},
 		"GET /status":  &fastrest.Status{},
+		"GET /echo":    &fastrest.Echo{},
 		"POST /p1sign": &fastrest.P1Sign{},
 		"GET /panic":   &fastrest.PanicService{},
 	}, fastrest.WithPreProcessor(fastrest.PreProcessorFn(func(dtx *fastrest.Context) error {
