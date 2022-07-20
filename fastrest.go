@@ -54,18 +54,6 @@ func (c *Context) AppendPoolReturner(r bytebufferpool.PoolReturner) {
 	}
 }
 
-func (c *Context) createRspData() (data []byte, err error) {
-	var pt bytebufferpool.PoolReturner
-	if v, ok := c.Rsp.(easyjson.Marshaler); ok {
-		data, pt, err = easyjson.MarshalPool(Pool, v)
-		c.AppendPoolReturner(pt)
-		return data, err
-	} else if c.Rsp != nil {
-		return json.Marshal(c.Rsp)
-	}
-	return nil, nil
-}
-
 type Service interface {
 	CreateReq() (interface{}, error)
 	Process(dtx *Context) (interface{}, error)
@@ -269,16 +257,8 @@ func (r *Router) handleService(dtx *Context) error {
 		}
 	}
 
-	if v, ok := req.(easyjson.Unmarshaler); ok {
-		if pt, err := easyjson.UnmarshalPool(Pool, dtx.Ctx.Request.Body(), v); pt != nil {
-			dtx.AppendPoolReturner(pt)
-		} else if err != nil {
-			return err
-		}
-	} else if req != nil && ss.Contains(string(dtx.Ctx.Request.Header.Peek("Content-Type")), "json") {
-		if err := json.Unmarshal(dtx.Ctx.Request.Body(), req); err != nil {
-			return err
-		}
+	if err := unmarshalJSON(dtx, req); err != nil {
+		return err
 	}
 
 	dtx.Rsp, err = s.Process(dtx)
@@ -298,7 +278,7 @@ func (r *Router) handleService(dtx *Context) error {
 		}
 	}
 
-	data, err := dtx.createRspData()
+	data, err := marshalJSON(dtx.Rsp, dtx)
 	if err != nil {
 		return err
 	}
@@ -357,4 +337,36 @@ func ParseArgs(initFiles *embed.FS) Arg {
 	log.Printf("Changed runtime.GOMAXPROCS to %d", maxProcs)
 
 	return c
+}
+
+func unmarshalJSON(dtx *Context, req interface{}) error {
+	if v, ok := req.(easyjson.Unmarshaler); ok {
+		pt, err := easyjson.UnmarshalPool(Pool, dtx.Ctx.Request.Body(), v)
+		if pt != nil {
+			dtx.AppendPoolReturner(pt)
+		}
+
+		return err
+	}
+
+	if req != nil && ss.Contains(string(dtx.Ctx.Request.Header.Peek("Content-Type")), "json") {
+		return json.Unmarshal(dtx.Ctx.Request.Body(), req)
+	}
+
+	return nil
+}
+
+func marshalJSON(rsp interface{}, c *Context) (data []byte, err error) {
+	var pt bytebufferpool.PoolReturner
+	if v, ok := rsp.(easyjson.Marshaler); ok {
+		data, pt, err = easyjson.MarshalPool(Pool, v)
+		c.AppendPoolReturner(pt)
+		return data, err
+	}
+
+	if rsp != nil {
+		return json.Marshal(rsp)
+	}
+
+	return nil, nil
 }
