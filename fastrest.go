@@ -20,6 +20,7 @@ import (
 	"github.com/bingoohuang/easyjson/jwriter"
 	"github.com/bingoohuang/gg/pkg/flagparse"
 	"github.com/bingoohuang/gg/pkg/sigx"
+	"github.com/bytedance/sonic"
 	"github.com/valyala/fasthttp"
 )
 
@@ -114,6 +115,7 @@ type RouterConfig struct {
 	PostProcessors  []PostProcessor
 	ErrorProcessors []ErrorProcessor
 	PanicProcessor  PanicProcessor
+	UsingSonic      bool
 }
 
 var (
@@ -135,6 +137,12 @@ func RegisterErrorProcessors(processors ...ErrorProcessor) {
 }
 
 type RouterConfigFn func(*RouterConfig)
+
+func WithSonic(yes bool) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.UsingSonic = yes
+	}
+}
 
 func WithPanicProcessor(v PanicProcessor) RouterConfigFn {
 	return func(r *RouterConfig) {
@@ -257,7 +265,7 @@ func (r *Router) handleService(dtx *Context) error {
 		}
 	}
 
-	if err := unmarshalJSON(dtx, req); err != nil {
+	if err := unmarshalJSON(dtx, req, r.Config.UsingSonic); err != nil {
 		return err
 	}
 
@@ -278,7 +286,7 @@ func (r *Router) handleService(dtx *Context) error {
 		}
 	}
 
-	data, err := marshalJSON(dtx.Rsp, dtx)
+	data, err := marshalJSON(dtx, dtx.Rsp, r.Config.UsingSonic)
 	if err != nil {
 		return err
 	}
@@ -339,7 +347,15 @@ func ParseArgs(initFiles *embed.FS) Arg {
 	return c
 }
 
-func unmarshalJSON(dtx *Context, req interface{}) error {
+func unmarshalJSON(dtx *Context, req interface{}, usingSonic bool) error {
+	if req == nil {
+		return nil
+	}
+
+	if usingSonic {
+		return sonic.Unmarshal(dtx.Ctx.Request.Body(), req)
+	}
+
 	if v, ok := req.(easyjson.Unmarshaler); ok {
 		pt, err := easyjson.UnmarshalPool(Pool, dtx.Ctx.Request.Body(), v)
 		if pt != nil {
@@ -349,14 +365,22 @@ func unmarshalJSON(dtx *Context, req interface{}) error {
 		return err
 	}
 
-	if req != nil && ss.Contains(string(dtx.Ctx.Request.Header.Peek("Content-Type")), "json") {
+	if ss.Contains(string(dtx.Ctx.Request.Header.Peek("Content-Type")), "json") {
 		return json.Unmarshal(dtx.Ctx.Request.Body(), req)
 	}
 
 	return nil
 }
 
-func marshalJSON(rsp interface{}, c *Context) (data []byte, err error) {
+func marshalJSON(c *Context, rsp interface{}, usingSonic bool) (data []byte, err error) {
+	if rsp == nil {
+		return nil, nil
+	}
+
+	if usingSonic {
+		return sonic.Marshal(rsp)
+	}
+
 	var pt bytebufferpool.PoolReturner
 	if v, ok := rsp.(easyjson.Marshaler); ok {
 		data, pt, err = easyjson.MarshalPool(Pool, v)
@@ -364,9 +388,5 @@ func marshalJSON(rsp interface{}, c *Context) (data []byte, err error) {
 		return data, err
 	}
 
-	if rsp != nil {
-		return json.Marshal(rsp)
-	}
-
-	return nil, nil
+	return json.Marshal(rsp)
 }

@@ -4,7 +4,6 @@ package fastrest
 
 import (
 	json "encoding/json"
-
 	easyjson "github.com/bingoohuang/easyjson"
 	jlexer "github.com/bingoohuang/easyjson/jlexer"
 	jwriter "github.com/bingoohuang/easyjson/jwriter"
@@ -59,7 +58,6 @@ func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest(in *jlexer.Lexer, out *R
 		in.Consumed()
 	}
 }
-
 func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest(out *jwriter.Writer, in Rsp) {
 	out.RawByte('{')
 	first := true
@@ -99,30 +97,15 @@ func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest(out *jwriter.Writer, in 
 	out.RawByte('}')
 }
 
-// MarshalJSON supports json.Marshaler interface
-func (v Rsp) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjsonC80ae7adEncodeGithubComBingoohuangFastrest(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Rsp) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonC80ae7adEncodeGithubComBingoohuangFastrest(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *Rsp) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonC80ae7adDecodeGithubComBingoohuangFastrest(&r, v)
-	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Rsp) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonC80ae7adDecodeGithubComBingoohuangFastrest(l, v)
 }
-
 func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest1(in *jlexer.Lexer, out *P1SignRsp) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -154,7 +137,6 @@ func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest1(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-
 func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest1(out *jwriter.Writer, in P1SignRsp) {
 	out.RawByte('{')
 	first := true
@@ -167,30 +149,15 @@ func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest1(out *jwriter.Writer, in
 	out.RawByte('}')
 }
 
-// MarshalJSON supports json.Marshaler interface
-func (v P1SignRsp) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjsonC80ae7adEncodeGithubComBingoohuangFastrest1(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v P1SignRsp) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonC80ae7adEncodeGithubComBingoohuangFastrest1(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *P1SignRsp) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonC80ae7adDecodeGithubComBingoohuangFastrest1(&r, v)
-	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *P1SignRsp) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonC80ae7adDecodeGithubComBingoohuangFastrest1(l, v)
 }
-
 func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest2(in *jlexer.Lexer, out *P1SignReq) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -224,7 +191,6 @@ func easyjsonC80ae7adDecodeGithubComBingoohuangFastrest2(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-
 func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest2(out *jwriter.Writer, in P1SignReq) {
 	out.RawByte('{')
 	first := true
@@ -242,23 +208,9 @@ func easyjsonC80ae7adEncodeGithubComBingoohuangFastrest2(out *jwriter.Writer, in
 	out.RawByte('}')
 }
 
-// MarshalJSON supports json.Marshaler interface
-func (v P1SignReq) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjsonC80ae7adEncodeGithubComBingoohuangFastrest2(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v P1SignReq) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonC80ae7adEncodeGithubComBingoohuangFastrest2(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *P1SignReq) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonC80ae7adDecodeGithubComBingoohuangFastrest2(&r, v)
-	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface

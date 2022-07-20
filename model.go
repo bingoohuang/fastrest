@@ -1,6 +1,6 @@
 package fastrest
 
-//go:generate easyjson model.go
+//go:generate easyjson -no_std_marshalers model.go
 
 //easyjson:json
 type Rsp struct {
