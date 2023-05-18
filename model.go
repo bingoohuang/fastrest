@@ -4,9 +4,9 @@ package fastrest
 
 //easyjson:json
 type Rsp struct {
-	Status  int         `json:"status,omitempty"`
-	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
+	Message string      `json:"message,omitempty"`
+	Status  int         `json:"status,omitempty"`
 }
 
 //easyjson:json

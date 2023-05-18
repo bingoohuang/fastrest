@@ -4,6 +4,7 @@ package fastrest
 
 import (
 	json "encoding/json"
+
 	easyjson "github.com/bingoohuang/easyjson"
 	jlexer "github.com/bingoohuang/easyjson/jlexer"
 	jwriter "github.com/bingoohuang/easyjson/jwriter"

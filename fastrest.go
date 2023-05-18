@@ -12,26 +12,24 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/bingoohuang/gg/pkg/ss"
-	"github.com/valyala/fasthttp/reuseport"
-
 	"github.com/bingoohuang/easyjson"
 	"github.com/bingoohuang/easyjson/bytebufferpool"
 	"github.com/bingoohuang/easyjson/jwriter"
 	"github.com/bingoohuang/gg/pkg/flagparse"
 	"github.com/bingoohuang/gg/pkg/sigx"
-	"github.com/bytedance/sonic"
+	"github.com/bingoohuang/gg/pkg/ss"
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/reuseport"
 )
 
 type Context struct {
-	Returners   []bytebufferpool.PoolReturner
-	ServiceName string
-
 	Req interface{}
 	Rsp interface{}
 
-	Ctx *fasthttp.RequestCtx
+	Ctx         *fasthttp.RequestCtx
+	ServiceName string
+
+	Returners []bytebufferpool.PoolReturner
 }
 
 func (c *Context) Release() {
@@ -111,11 +109,10 @@ type Router struct {
 }
 
 type RouterConfig struct {
+	PanicProcessor  PanicProcessor
 	PreProcessors   []PreProcessor
 	PostProcessors  []PostProcessor
 	ErrorProcessors []ErrorProcessor
-	PanicProcessor  PanicProcessor
-	UsingSonic      bool
 }
 
 var (
@@ -137,12 +134,6 @@ func RegisterErrorProcessors(processors ...ErrorProcessor) {
 }
 
 type RouterConfigFn func(*RouterConfig)
-
-func WithSonic(yes bool) RouterConfigFn {
-	return func(r *RouterConfig) {
-		r.UsingSonic = yes
-	}
-}
 
 func WithPanicProcessor(v PanicProcessor) RouterConfigFn {
 	return func(r *RouterConfig) {
@@ -265,7 +256,7 @@ func (r *Router) handleService(dtx *Context) error {
 		}
 	}
 
-	if err := unmarshalJSON(dtx, req, r.Config.UsingSonic); err != nil {
+	if err := unmarshalJSON(dtx, req); err != nil {
 		return err
 	}
 
@@ -286,7 +277,7 @@ func (r *Router) handleService(dtx *Context) error {
 		}
 	}
 
-	data, err := marshalJSON(dtx, dtx.Rsp, r.Config.UsingSonic)
+	data, err := marshalJSON(dtx, dtx.Rsp)
 	if err != nil {
 		return err
 	}
@@ -347,13 +338,9 @@ func ParseArgs(initFiles *embed.FS) Arg {
 	return c
 }
 
-func unmarshalJSON(dtx *Context, req interface{}, usingSonic bool) error {
+func unmarshalJSON(dtx *Context, req interface{}) error {
 	if req == nil {
 		return nil
-	}
-
-	if usingSonic {
-		return sonic.Unmarshal(dtx.Ctx.Request.Body(), req)
 	}
 
 	if v, ok := req.(easyjson.Unmarshaler); ok {
@@ -372,13 +359,9 @@ func unmarshalJSON(dtx *Context, req interface{}, usingSonic bool) error {
 	return nil
 }
 
-func marshalJSON(c *Context, rsp interface{}, usingSonic bool) (data []byte, err error) {
+func marshalJSON(c *Context, rsp interface{}) (data []byte, err error) {
 	if rsp == nil {
 		return nil, nil
-	}
-
-	if usingSonic {
-		return sonic.Marshal(rsp)
 	}
 
 	var pt bytebufferpool.PoolReturner

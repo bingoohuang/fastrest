@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/bingoohuang/golog"
-
 	"github.com/bingoohuang/fastrest"
 	_ "github.com/bingoohuang/fastrest/validators/v10" // 引入请求结构体自动校验
+	"github.com/bingoohuang/golog"
 )
 
 // InitAssets is the initial assets.
+//
 //go:embed initassets
 var InitAssets embed.FS
 
