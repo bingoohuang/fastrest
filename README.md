@@ -135,3 +135,7 @@ Latency Percentile:
   P50        P75      P90      P95      P99     P99.9     P99.99
   1.376ms  2.065ms  2.713ms  3.702ms  9.401ms  19.398ms  33.875ms
 ```
+
+## AccessLog
+
+1. 设置环境变量 ACCESS_LOG_DIR，启用 access log, e.g. `ACCESS_LOG_DIR=accesslog fastrest`

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"path/filepath"
 	"reflect"
 	"runtime"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/bingoohuang/easyjson/bytebufferpool"
 	"github.com/bingoohuang/easyjson/jwriter"
 	"github.com/bingoohuang/gg/pkg/flagparse"
+	"github.com/bingoohuang/gg/pkg/iox"
 	"github.com/bingoohuang/gg/pkg/sigx"
 	"github.com/bingoohuang/gg/pkg/ss"
 	"github.com/valyala/fasthttp"
@@ -110,6 +112,7 @@ type Router struct {
 
 type RouterConfig struct {
 	PanicProcessor  PanicProcessor
+	AccessLogDir    string
 	PreProcessors   []PreProcessor
 	PostProcessors  []PostProcessor
 	ErrorProcessors []ErrorProcessor
@@ -134,6 +137,12 @@ func RegisterErrorProcessors(processors ...ErrorProcessor) {
 }
 
 type RouterConfigFn func(*RouterConfig)
+
+func WithAccessLogDir(v string) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.AccessLogDir = v
+	}
+}
 
 func WithPanicProcessor(v PanicProcessor) RouterConfigFn {
 	return func(r *RouterConfig) {
@@ -188,7 +197,20 @@ func (r *Router) Serve(port string, reusePort bool) error {
 		return err
 	}
 
-	return fasthttp.Serve(ln, r.handle)
+	handle := r.handle
+
+	if r.Config.AccessLogDir != "" {
+		accessLogWriter, err := GetDailyLogWriter(filepath.Join(r.Config.AccessLogDir, "access.log"))
+		if err != nil {
+			return err
+		}
+		defer iox.Close(accessLogWriter)
+
+		accessLogger := log.New(accessLogWriter, "", 0)
+		handle = Combined(r.handle, accessLogger.Printf)
+	}
+
+	return fasthttp.Serve(ln, handle)
 }
 
 func (r *Router) recover(dtx *Context) {
