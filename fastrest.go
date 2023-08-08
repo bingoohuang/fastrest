@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -16,12 +17,17 @@ import (
 	"github.com/bingoohuang/easyjson"
 	"github.com/bingoohuang/easyjson/bytebufferpool"
 	"github.com/bingoohuang/easyjson/jwriter"
+	"github.com/bingoohuang/fastrest/fgrpc/server"
+	"github.com/bingoohuang/fastrest/fgrpc/status"
 	"github.com/bingoohuang/gg/pkg/flagparse"
 	"github.com/bingoohuang/gg/pkg/iox"
 	"github.com/bingoohuang/gg/pkg/sigx"
 	"github.com/bingoohuang/gg/pkg/ss"
+	"github.com/soheilhy/cmux"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/reuseport"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type Context struct {
@@ -184,6 +190,11 @@ func New(m map[string]Service, fns ...RouterConfigFn) *Router {
 	}
 }
 
+func IsEnvOff(name string) bool {
+	s := strings.ToLower(os.Getenv(name))
+	return s == "0" || s == "off" || s == "no"
+}
+
 func (r *Router) Serve(port string, reusePort bool) error {
 	log.Printf("Start to ListenAndServe %s", port)
 
@@ -197,6 +208,20 @@ func (r *Router) Serve(port string, reusePort bool) error {
 		return err
 	}
 
+	m := cmux.New(ln)
+	// Match connections in order:
+	// First grpc, then HTTP, and otherwise Go RPC/TCP.
+	// Java gRPC Clients: Java gRPC client blocks until it receives a SETTINGS frame from the server.
+	// If you are using the Java client to connect to a cmux'ed gRPC server please match with writers:
+	grpcL := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+	// All the rest is assumed to be HTTP
+	httpL := m.Match(cmux.Any())
+
+	grpcS := grpc.NewServer()
+	status.RegisterStatusServiceServer(grpcS, &server.StatusServer{})
+	if !IsEnvOff("GRPC_REFLECTION") {
+		reflection.Register(grpcS)
+	}
 	handle := r.handle
 
 	if r.Config.AccessLogDir != "" {
@@ -210,7 +235,15 @@ func (r *Router) Serve(port string, reusePort bool) error {
 		handle = Combined(r.handle, accessLogger.Printf)
 	}
 
-	return fasthttp.Serve(ln, handle)
+	httpS := &fasthttp.Server{
+		Handler: handle,
+	}
+
+	// Use the muxed listeners for your servers.
+	go grpcS.Serve(grpcL)
+	go httpS.Serve(httpL)
+
+	return m.Serve()
 }
 
 func (r *Router) recover(dtx *Context) {

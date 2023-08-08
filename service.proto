@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "fgrpc/status";
+
+message StatusRequest{
+}
+
+message StatusResponse{
+  uint64 status = 1;
+  string message = 2;
+}
+
+service StatusService{
+  // unary RPC
+  rpc Status(StatusRequest) returns (StatusResponse);
+}
