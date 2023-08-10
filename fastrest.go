@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/bingoohuang/fastrest/fgrpc/service"
 	"log"
 	"net"
 	"net/http"
@@ -18,7 +19,6 @@ import (
 	"github.com/bingoohuang/easyjson/bytebufferpool"
 	"github.com/bingoohuang/easyjson/jwriter"
 	"github.com/bingoohuang/fastrest/fgrpc/server"
-	"github.com/bingoohuang/fastrest/fgrpc/status"
 	"github.com/bingoohuang/gg/pkg/flagparse"
 	"github.com/bingoohuang/gg/pkg/iox"
 	"github.com/bingoohuang/gg/pkg/sigx"
@@ -218,7 +218,8 @@ func (r *Router) Serve(port string, reusePort bool) error {
 	httpL := m.Match(cmux.Any())
 
 	grpcS := grpc.NewServer()
-	status.RegisterStatusServiceServer(grpcS, &server.StatusServer{})
+	service.RegisterServiceServer(grpcS, &server.GrpcServer{})
+
 	if !IsEnvOff("GRPC_REFLECTION") {
 		reflection.Register(grpcS)
 	}

@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "fgrpc/status";
+option go_package = "fgrpc/service";
 
 message StatusRequest{
 }
@@ -10,7 +10,27 @@ message StatusResponse{
   string message = 2;
 }
 
-service StatusService{
+
+// https://grpc.io/docs/languages/go/quickstart/
+// 数据类型： https://protobuf.dev/programming-guides/proto3/#scalar
+
+message EncryptRequest{
+  string transId = 1;
+  string appId = 2;
+  string keyId = 3;
+  string mode = 4;
+  string padding = 5;
+  bytes plainText = 6;
+}
+
+message EncryptResponse{
+  bytes data = 1;
+}
+
+
+service Service{
   // unary RPC
   rpc Status(StatusRequest) returns (StatusResponse);
+  // unary RPC
+  rpc Encrypt(EncryptRequest) returns (EncryptResponse);
 }
