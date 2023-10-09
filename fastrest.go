@@ -104,6 +104,10 @@ func (f ErrorProcessorFn) ProcessError(dtx *Context, err error) error {
 	return f(dtx, err)
 }
 
+const (
+	ResultSendFile = "__ResultSendFile"
+)
+
 type DummyService struct{}
 
 func (d *DummyService) CreateReq() (interface{}, error)      { return nil, nil }
@@ -319,6 +323,10 @@ func (r *Router) handleService(dtx *Context) error {
 	dtx.Rsp, err = s.Process(dtx)
 	if err != nil {
 		return err
+	}
+
+	if dtx.Rsp == ResultSendFile {
+		return nil
 	}
 
 	if p, ok := s.(PostProcessor); ok {

@@ -26,6 +26,13 @@ func (p *Status) Process(*Context) (interface{}, error) {
 	return &Rsp{Status: 200, Message: "成功"}, nil
 }
 
+type Jpg struct{ DummyService }
+
+func (p *Jpg) Process(ctx *Context) (interface{}, error) {
+	ctx.Ctx.SendFile("_doc/architect.png")
+	return ResultSendFile, nil
+}
+
 type Version struct{ DummyService }
 
 func (p *Version) Process(ctx *Context) (interface{}, error) {
