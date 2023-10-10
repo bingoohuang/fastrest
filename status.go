@@ -2,6 +2,7 @@ package fastrest
 
 import (
 	"log"
+	"mime"
 	"net/http"
 	"os"
 	"strings"
@@ -29,6 +30,10 @@ func (p *Status) Process(*Context) (interface{}, error) {
 type Jpg struct{ DummyService }
 
 func (p *Jpg) Process(ctx *Context) (interface{}, error) {
+	// 设置Content-Disposition 头，以指定下载文件名
+	ctx.Ctx.Response.Header.Set("Content-Disposition",
+		mime.FormatMediaType("attachment", map[string]string{"filename": "猴哥.png"}))
+	// 指定下载的文件
 	ctx.Ctx.SendFile("_doc/architect.png")
 	return ResultSendFile, nil
 }
