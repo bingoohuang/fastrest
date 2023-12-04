@@ -139,3 +139,12 @@ Latency Percentile:
 ## AccessLog
 
 1. 设置环境变量 ACCESS_LOG_DIR，启用 access log, e.g. `ACCESS_LOG_DIR=accesslog fastrest`
+
+## 技术特点
+
+fastrest 基于 Go 语言优秀的GPM并发模型之上，叠加多项优化技术：
+
+1. 替换默认的 net/http 为 fasthttp，基准测试性能提升约10倍
+2. 替换默认的 encoding/base64 为基于 Turbo-Base64 实现的 cristalhq/base64，是基准测试性能提升约3倍
+3. 替换默认的 encoding/json 为基于代码生成免除反射调用的 easyjson，，基准测试性能提升约5倍
+4. 调整默认的 最大并发数 GOMAXPROCS 8 为4倍值约30，能达到最高性能
