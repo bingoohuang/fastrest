@@ -126,6 +126,8 @@ type RouterConfig struct {
 	PreProcessors   []PreProcessor
 	PostProcessors  []PostProcessor
 	ErrorProcessors []ErrorProcessor
+
+	NotFoundHandler func(dtx *Context)
 }
 
 var (
@@ -147,6 +149,12 @@ func RegisterErrorProcessors(processors ...ErrorProcessor) {
 }
 
 type RouterConfigFn func(*RouterConfig)
+
+func WithNotFoundHandler(v func(ctx *Context)) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.NotFoundHandler = v
+	}
+}
 
 func WithAccessLogDir(v string) RouterConfigFn {
 	return func(r *RouterConfig) {
@@ -297,7 +305,11 @@ func (r *Router) handle(ctx *fasthttp.RequestCtx) {
 func (r *Router) handleService(dtx *Context) error {
 	serviceName, s := r.findService(dtx)
 	if s == nil {
-		dtx.Ctx.NotFound()
+		if r.Config.NotFoundHandler != nil {
+			r.Config.NotFoundHandler(dtx)
+		} else {
+			dtx.Ctx.NotFound()
+		}
 		return nil
 	}
 
