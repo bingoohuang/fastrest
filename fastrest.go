@@ -212,6 +212,10 @@ func (r *Router) Serve(port string, reusePort bool) error {
 		return err
 	}
 
+	return r.ServeListener(ln)
+}
+
+func (r *Router) ServeListener(ln net.Listener) error {
 	m := cmux.New(ln)
 	// Match connections in order:
 	// First grpc, then HTTP, and otherwise Go RPC/TCP.
