@@ -13,6 +13,7 @@ type Arg struct {
 	Init      bool   `usage:"init example conf.yml/ctl and then exit"`
 	Version   bool   `usage:"print version then exit"`
 	ReusePort bool   `usage:"Reuse port"`
+	MaxProcs  int    `usage:"GOMAXPROCS"`
 }
 
 func (c *Arg) VersionInfo() string { return v.Version() }

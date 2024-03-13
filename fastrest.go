@@ -411,9 +411,10 @@ func ParseArgs(initFiles *embed.FS) Arg {
 	// 第四步，下载 cpu.profile 文件，`go tool pprof -http :9402 cpu.profile` 开启浏览器查看
 	sigx.RegisterSignalProfile()
 
-	maxProcs := int(4 * float64(runtime.GOMAXPROCS(0)))
-	runtime.GOMAXPROCS(maxProcs)
-	log.Printf("Changed runtime.GOMAXPROCS to %d", maxProcs)
+	if c.MaxProcs > 0 {
+		runtime.GOMAXPROCS(c.MaxProcs)
+		log.Printf("Changed runtime.GOMAXPROCS to %d", c.MaxProcs)
+	}
 
 	return c
 }
