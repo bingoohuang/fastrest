@@ -110,8 +110,8 @@ const (
 
 type DummyService struct{}
 
-func (d *DummyService) CreateReq() (interface{}, error)      { return nil, nil }
-func (d DummyService) Process(*Context) (interface{}, error) { return nil, nil }
+func (d *DummyService) CreateReq() (interface{}, error)       { return nil, nil }
+func (d *DummyService) Process(*Context) (interface{}, error) { return nil, nil }
 
 type Router struct {
 	routers       map[string]Service
@@ -127,7 +127,8 @@ type RouterConfig struct {
 	PostProcessors  []PostProcessor
 	ErrorProcessors []ErrorProcessor
 
-	NotFoundHandler func(dtx *Context)
+	NotFoundHandler    func(dtx *Context)
+	MaxRequestBodySize int
 }
 
 var (
@@ -183,6 +184,13 @@ func WithPostProcessor(v PostProcessor) RouterConfigFn {
 func WithErrorProcessor(v ErrorProcessor) RouterConfigFn {
 	return func(r *RouterConfig) {
 		r.ErrorProcessors = append(r.ErrorProcessors, v)
+	}
+}
+
+// WithMaxRequestBodySize set Maximum request body size.
+func WithMaxRequestBodySize(maxRequestBodySize int) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.MaxRequestBodySize = maxRequestBodySize
 	}
 }
 
@@ -254,6 +262,8 @@ func (r *Router) ServeListener(ln net.Listener) error {
 
 	httpS := &fasthttp.Server{
 		Handler: handle,
+
+		MaxRequestBodySize: r.Config.MaxRequestBodySize,
 	}
 
 	// Use the muxed listeners for your servers.
@@ -371,12 +381,12 @@ func (r *Router) findService(dtx *Context) (string, Service) {
 	path := string(dtx.Ctx.Path())
 	method := string(dtx.Ctx.Method())
 	key := method + " " + path
-	if service, ok := r.routers[key]; ok {
-		return r.routerService[key], service
+	if svc, ok := r.routers[key]; ok {
+		return r.routerService[key], svc
 	}
 
-	if service, ok := r.routers[path]; ok {
-		return r.routerService[path], service
+	if svc, ok := r.routers[path]; ok {
+		return r.routerService[path], svc
 	}
 
 	return "", nil
