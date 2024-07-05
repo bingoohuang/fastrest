@@ -13,6 +13,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"time"
 	"unsafe"
 
 	"github.com/bingoohuang/easyjson"
@@ -129,6 +130,8 @@ type RouterConfig struct {
 
 	NotFoundHandler    func(dtx *Context)
 	MaxRequestBodySize int
+
+	*fasthttp.Server
 }
 
 var (
@@ -191,6 +194,13 @@ func WithErrorProcessor(v ErrorProcessor) RouterConfigFn {
 func WithMaxRequestBodySize(maxRequestBodySize int) RouterConfigFn {
 	return func(r *RouterConfig) {
 		r.MaxRequestBodySize = maxRequestBodySize
+	}
+}
+
+// WithFastHTTPServer set customized fasthttp.Server, warn: Handler will be ignored
+func WithFastHTTPServer(server *fasthttp.Server) RouterConfigFn {
+	return func(r *RouterConfig) {
+		r.Server = server
 	}
 }
 
@@ -260,10 +270,30 @@ func (r *Router) ServeListener(ln net.Listener) error {
 		handle = Combined(r.handle, accessLogger.Printf)
 	}
 
-	httpS := &fasthttp.Server{
-		Handler: handle,
+	httpS := r.Config.Server
+	if httpS == nil {
+		httpS = &fasthttp.Server{}
+	}
 
-		MaxRequestBodySize: r.Config.MaxRequestBodySize,
+	httpS.Handler = handle
+	if r.Config.MaxRequestBodySize > 0 {
+		httpS.MaxRequestBodySize = r.Config.MaxRequestBodySize
+	}
+
+	if httpS.MaxConnsPerIP == 0 {
+		httpS.MaxConnsPerIP = 100
+	}
+	if httpS.IdleTimeout == 0 {
+		httpS.IdleTimeout = 10 * time.Second
+	}
+	if httpS.ReadTimeout == 0 {
+		httpS.ReadTimeout = 10 * time.Second
+	}
+	if httpS.WriteTimeout == 0 {
+		httpS.WriteTimeout = 10 * time.Second
+	}
+	if httpS.ReadBufferSize == 0 {
+		httpS.ReadBufferSize = 2048
 	}
 
 	// Use the muxed listeners for your servers.
