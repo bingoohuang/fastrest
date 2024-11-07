@@ -4,7 +4,6 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/bingoohuang/fastrest/fgrpc/service"
 	"log"
 	"net"
 	"net/http"
@@ -20,10 +19,12 @@ import (
 	"github.com/bingoohuang/easyjson/bytebufferpool"
 	"github.com/bingoohuang/easyjson/jwriter"
 	"github.com/bingoohuang/fastrest/fgrpc/server"
+	"github.com/bingoohuang/fastrest/fgrpc/service"
 	"github.com/bingoohuang/gg/pkg/flagparse"
 	"github.com/bingoohuang/gg/pkg/iox"
 	"github.com/bingoohuang/gg/pkg/sigx"
 	"github.com/bingoohuang/gg/pkg/ss"
+	nss "github.com/bingoohuang/ngg/ss"
 	"github.com/soheilhy/cmux"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/reuseport"
@@ -294,6 +295,10 @@ func (r *Router) ServeListener(ln net.Listener) error {
 	}
 	if httpS.ReadBufferSize == 0 {
 		httpS.ReadBufferSize = 2048
+	}
+
+	if nss.Pick1(nss.Getenv[bool]("STRUCT_ENV_ON", true)) {
+		_ = nss.StructEnv(httpS, &nss.StructEnvOptions{Prefix: "FAST_HTTP_", PanicOnError: true})
 	}
 
 	// Use the muxed listeners for your servers.
