@@ -8,7 +8,7 @@ require (
 	github.com/bingoohuang/easyjson v0.0.0-20240312031037-fad94e058bec
 	github.com/bingoohuang/gg v0.0.0-20240822023057-9d953357a953
 	github.com/bingoohuang/golog v0.0.0-20240909041443-283abc3a5ce0
-	github.com/bingoohuang/ngg/ss v0.0.0-20241107145815-88c781e67d75
+	github.com/bingoohuang/ngg/ss v0.0.0-20241108052910-cc56150b2d99
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/lestrrat/go-file-rotatelogs v0.0.0-20180223000712-d3151e2a480f
 	github.com/soheilhy/cmux v0.1.5

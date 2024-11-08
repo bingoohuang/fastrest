@@ -6,8 +6,8 @@ github.com/bingoohuang/gg v0.0.0-20240822023057-9d953357a953 h1:M6cMDTHTtYprXBr2
 github.com/bingoohuang/gg v0.0.0-20240822023057-9d953357a953/go.mod h1:ZkFMlTgf+1D8inFRk4mXnOlPfAyxmmwgpPMq+FB9hnA=
 github.com/bingoohuang/golog v0.0.0-20240909041443-283abc3a5ce0 h1:0i3fPPCnoR7Tnx/CTlXxuG6IdTRABO7CySOAyPX3xbk=
 github.com/bingoohuang/golog v0.0.0-20240909041443-283abc3a5ce0/go.mod h1:kw8jDenP9XKVKx+mgVcaIZV9xLzaRQkduj3YDBZZcyc=
-github.com/bingoohuang/ngg/ss v0.0.0-20241107145815-88c781e67d75 h1:7X6yzS12FUXODQr3sgHjY6pVS3ycgwYbCMgWmHxFJag=
-github.com/bingoohuang/ngg/ss v0.0.0-20241107145815-88c781e67d75/go.mod h1:q713LuNHPm6REV+2M0nB+H/MnmUH3dx0Z/UjvKTos68=
+github.com/bingoohuang/ngg/ss v0.0.0-20241108052910-cc56150b2d99 h1:PdRVJAhm3gWu9fRbh5DSVLqKNN2s8YAR2q4GkUGkeTY=
+github.com/bingoohuang/ngg/ss v0.0.0-20241108052910-cc56150b2d99/go.mod h1:q713LuNHPm6REV+2M0nB+H/MnmUH3dx0Z/UjvKTos68=
 github.com/bingoohuang/ngg/ver v0.0.0-20241107131525-cc7e972c4538 h1:1Yvfoh1k5YUqz2Eqq5ka/iXsdntkFJUmIt+PwI0vJOU=
 github.com/bingoohuang/ngg/ver v0.0.0-20241107131525-cc7e972c4538/go.mod h1:AMbGjgUESq+WgEcYZU4K+SAGU/7OzTRMDCBjovNL56c=
 github.com/bingoohuang/ngg/yaml v0.0.0-20241107131525-cc7e972c4538 h1:bdAaWGJtbnBr6nhVwm4HmnCWU3NfqBO/7iMfrkfwbTg=
